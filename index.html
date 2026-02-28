@@ -37,25 +37,41 @@ const symbols = [
 ];
 
 async function loadStocks() {
-  const api = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
-  const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(api);
+  try {
+    const api = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
+    const proxy = "https://corsproxy.io/?" + encodeURIComponent(api);
 
-  const res = await fetch(proxy);
-  const data = await res.json();
-  const stocks = data.quoteResponse.result;
+    const res = await fetch(proxy);
+    const data = await res.json();
 
-  let html = "";
+    console.log(data); // デバッグ用
 
-  stocks.forEach(s => {
-    html += `
-      <div class="stock">
-        <div>${s.shortName}</div>
-        <div class="price">¥ ${s.regularMarketPrice}</div>
-      </div>
-    `;
-  });
+    if (!data.quoteResponse || !data.quoteResponse.result) {
+      document.getElementById("stocks").innerHTML =
+        "<p>データ取得失敗（API制限の可能性）</p>";
+      return;
+    }
 
-  document.getElementById("stocks").innerHTML = html;
+    const stocks = data.quoteResponse.result;
+
+    let html = "";
+
+    stocks.forEach(s => {
+      html += `
+        <div class="stock">
+          <div>${s.shortName || s.symbol}</div>
+          <div class="price">¥ ${s.regularMarketPrice ?? "-"}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById("stocks").innerHTML = html;
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("stocks").innerHTML =
+      "<p>エラー発生</p>";
+  }
 }
 
 loadStocks();
