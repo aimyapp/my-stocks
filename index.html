@@ -33,12 +33,14 @@ const symbols = [
   "1605.T",      // INPEX
   "2914.T",      // JT
   "03311187.T",  // eMAXIS Slim S&P500
-  "0331421A.T"   // eMAXIS Slim 全世界株式（除く日本）
+  "0331421A.T"   // eMAXIS Slim 全世界（除く日本）
 ];
 
 async function loadStocks() {
-  const url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
-  const res = await fetch(url);
+  const api = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
+  const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(api);
+
+  const res = await fetch(proxy);
   const data = await res.json();
   const stocks = data.quoteResponse.result;
 
