@@ -1,36 +1,31 @@
 export default async function handler(req, res) {
   try {
     const symbols = [
-      "1605.T",
-      "2914.T",
-      "03311187.T",
-      "0331421A.T"
+      "1605.T",      // INPEX
+      "2914.T",      // JT
+      "SPY",         // S&P500 ETF
+      "VT"           // 全世界株式ETF（オルカン代替）
     ];
 
-    const url =
-      "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" +
-      symbols.join(",");
+    const apiKey = process.env.ALPHA_VANTAGE_KEY; // 環境変数に入れる
+    const results = [];
 
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
+    for (const symbol of symbols) {
+      const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+      const response = await fetch(url);
+      const data = await response.json();
 
-    if (!response.ok) {
-      console.error("Yahoo API error:", response.status);
-      return res.status(response.status).json({
-        error: "Yahoo API error",
-        status: response.status
+      // Alpha Vantage のデータ形式に合わせる
+      results.push({
+        name: symbol,
+        price: data["Global Quote"]?.["05. price"] ?? "-"
       });
     }
 
-    const data = await response.json();
-
-    return res.status(200).json(data);
+    res.status(200).json(results);
 
   } catch (error) {
     console.error("Server error:", error);
-    return res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error" });
   }
 }
